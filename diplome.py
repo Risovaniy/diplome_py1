@@ -1,14 +1,30 @@
 import time
 import json
 import requests
-
+from pprint import pprint
 
 class User_vk:
-
+    
     def __init__(self, user_id):
         self.token = token
         self.user_id = user_id
         self.version = version
+
+    def check_name_or_id(self):
+        response = requests.get(
+                'https://api.vk.com/method/users.get?',
+                params = {
+                    'user_ids': self.user_id,
+                    'access_token': self.token,
+                    'v': self.version
+                    }
+                )
+        print('.')
+        check = str(response)[-5]
+        if check == 6:
+            time.sleep(time_sleep)
+            check_name_or_id(self)
+        self.user_id = response.json()['response'][0]['id']
 
     def get_groups(self):
         response = requests.get(
@@ -22,7 +38,10 @@ class User_vk:
                     }
                 )
         print('.')
-        time.sleep(time_sleep)
+        check = str(response)[-5]
+        if check == 6:
+            time.sleep(time_sleep)
+            get_groups(self)
         return response.json()
 
     def get_friends_id(self):
@@ -37,7 +56,10 @@ class User_vk:
                     }
                 )
         print('.')
-        time.sleep(time_sleep)
+        check = str(response)[-5]
+        if check == 6:
+            time.sleep(time_sleep)
+            get_friends_id(self)
         try:
             for friend in response.json()["response"]["items"]:
                 friends_id.append(friend)
@@ -48,6 +70,7 @@ class User_vk:
 
 def original_groups(user_id):
     user = User_vk(user_id)
+    user.check_name_or_id()
     user_orig_groups = user.get_groups()['response']['items']
     friends_id = user.get_friends_id()
     number_friend = 0
@@ -65,6 +88,7 @@ def original_groups(user_id):
                 print(f'Сравнили с {number_friend} друзьями, осталось {total_friend - number_friend}')
     return user_orig_groups
 
+
 def data_group(group_id):
     response = requests.get(
                     'https://api.vk.com/method/groups.getById?',
@@ -76,7 +100,10 @@ def data_group(group_id):
                         }
                     )
     print('.')
-    time.sleep(time_sleep)
+    check = str(response)[-5]
+    if check == 6:
+        time.sleep(time_sleep)
+        data_group(group_id)
     group = response.json()
     return group['response'][0]
 
@@ -97,10 +124,10 @@ def create_file(groups_id):
 
 
 if __name__ == '__main__':
-    time_sleep = 0.001
-    main_user_id = 171691064
+    time_sleep = 0.3
+    main_user_id = input('Введите username или id пользователя "Вконтакте"\n')  # Fix it
+    token = input('Введите token\n')
     version = '5.103'
-    token = '958eb5d439726565e9333aa30e50e0f937ee432e927f0dbd541c541887d919a7c56f95c04217915c32008'
     groups = original_groups(main_user_id)
     print('Сравнение групп окончено успешно.')
     if len(groups) == 0:
